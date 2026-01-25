@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forsteri - Discord Security Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #f5a623;
+            --accent2: #ff6b35;
+            --accent3: #ffd700;
+            --bg: #030304;
+            --card: rgba(255,255,255,0.03);
+            --glow: rgba(245, 166, 35, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(245, 166, 35, 0.08) 0%, transparent 25%),
+                        radial-gradient(circle at 70% 80%, rgba(255, 107, 53, 0.06) 0%, transparent 25%);
+            animation: ambientGlow 15s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes ambientGlow {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(2%, 2%) rotate(3deg); }
+        }
+
+        /* CUSTOM CURSOR - Desktop only */
+        .cursor, .cursor-dot {
+            display: none;
+        }
+        
+        @media (min-width: 769px) and (hover: hover) and (pointer: fine) {
+            .cursor {
+                display: block;
+                width: 20px;
+                height: 20px;
+                border: 2px solid var(--accent);
+                border-radius: 50%;
+                position: fixed;
+                pointer-events: none;
+                z-index: 9999;
+                transition: transform 0.1s, width 0.3s, height 0.3s, border 0.3s;
+                transform: translate(-50%, -50%);
+            }
+
+            .cursor-dot {
+                display: block;
+                width: 6px;
+                height: 6px;
+                background: var(--accent);
+                border-radius: 50%;
+                position: fixed;
+                pointer-events: none;
+                z-index: 9999;
+                transform: translate(-50%, -50%);
+            }
+
+            .cursor.hover {
+                width: 50px;
+                height: 50px;
+                border-color: var(--accent2);
+                background: rgba(245, 166, 35, 0.1);
+            }
+            
+            body {
+                cursor: none;
+            }
+        }
+
+        /* CANVAS BACKGROUND */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* NAVBAR */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1.5rem 0;
+            transition: all 0.4s;
+        }
+
+        nav.scrolled {
+            background: rgba(3, 3, 4, 0.95);
+            backdrop-filter: blur(30px);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        .logo img {
+            width: 46px;
+            height: 46px;
+        }
+
+        .logo span {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.15s ease-out;
+            letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-links a:hover { color: #fff; }
+
+        .btn-glow {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #000;
+            font-weight: 600;
+            padding: 0.9rem 2rem;
+            border-radius: 60px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(245, 166, 35, 0.25);
+        }
+        
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: btnShine 3s ease-in-out infinite;
+        }
+        
+        @keyframes btnShine {
+            0%, 100% { left: -100%; }
+            50% { left: 100%; }
+        }
+
+        .btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(245, 166, 35, 0.4);
+            color: #000;
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 90px 0 40px;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-eyebrow span {
+            display: inline-block;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, rgba(245, 166, 35, 0.15), rgba(255, 107, 53, 0.1));
+            border: 1px solid rgba(245, 166, 35, 0.3);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(245, 166, 35, 0.15);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(245, 166, 35, 0.15); }
+            50% { box-shadow: 0 0 30px rgba(245, 166, 35, 0.25); }
+        }
+
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 800;
+            line-height: 0.95;
+            letter-spacing: -3px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title .line {
+            display: block;
+            overflow: hidden;
+        }
+
+        .hero-title .line span {
+            display: inline-block;
+            animation: slideUp 1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+            animation-delay: var(--delay);
+            transform: translateY(100%);
+        }
+
+        @keyframes slideUp {
+            to { transform: translateY(0); }
+        }
+
+        .hero-title .gradient {
+            background: linear-gradient(135deg, var(--accent), var(--accent2), #fff, var(--accent));
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 5s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero-desc {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.45);
+            max-width: 500px;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .hero-centered {
+            text-align: center;
+        }
+
+        .hero-centered .hero-eyebrow {
+            justify-content: center;
+        }
+
+        .hero-visual-centered {
+            margin: 1.5rem auto;
+            max-width: 600px;
+            perspective: 1000px;
+        }
+
+        .discord-card {
+            padding: 20px;
+            background: linear-gradient(145deg, rgba(30, 31, 34, 0.95), rgba(20, 21, 23, 0.98));
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .discord-screenshot {
+            max-width: 100%;
+            max-height: 320px;
+            object-fit: contain;
+            border-radius: 12px;
+            display: block;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1.25rem;
+            align-items: center;
+        }
+
+        .btn-ghost {
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+            padding: 0.9rem 2rem;
+            border-radius: 60px;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.15s ease-out, background 0.15s ease-out, border-color 0.15s ease-out;
+            font-size: 0.9rem;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        /* HERO VISUAL - 3D CARD */
+        .hero-visual {
+            perspective: 1000px;
+        }
+
+        .discord-card {
+            background: linear-gradient(145deg, rgba(30, 31, 34, 0.9), rgba(20, 21, 23, 0.95));
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 420px;
+            margin-left: auto;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+            box-shadow: 
+                0 50px 100px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(255,255,255,0.05) inset;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .discord-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(245, 166, 35, 0.03) 0%, transparent 30%);
+            pointer-events: none;
+        }
+
+        .discord-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(245, 166, 35, 0.08), transparent 40%);
+            pointer-events: none;
+        }
+
+        .dc-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .dc-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #2b2d31;
+            padding: 6px;
+        }
+
+        .dc-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verified-badge {
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .dc-tag {
+            background: #5865f2;
+            font-size: 0.6rem;
+            padding: 3px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .dc-time {
+            margin-left: auto;
+            color: rgba(255,255,255,0.25);
+            font-size: 0.75rem;
+        }
+
+        .dc-embed {
+            background: #2b2d31;
+            border-left: 4px solid #ed4245;
+            border-radius: 4px;
+            padding: 14px;
+        }
+
+        .dc-embed-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .dc-embed-title .high { color: #ed4245; }
+
+        .dc-field {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .dc-field strong { color: #fff; }
+
+        .dc-channel {
+            background: rgba(88, 101, 242, 0.2);
+            color: #8b9dff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .dc-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+            margin: 12px 0;
+        }
+
+        .dc-section { font-size: 0.75rem; font-weight: 700; margin-bottom: 4px; }
+
+        .dc-text {
+            color: rgba(255,255,255,0.55);
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .dc-warning {
+            background: rgba(237, 66, 69, 0.12);
+            border: 1px solid rgba(237, 66, 69, 0.25);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .dc-warning strong {
+            color: #ed4245;
+            font-size: 0.8rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .dc-warning p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.75rem;
+            margin: 0;
+        }
+
+        .dc-tip {
+            color: rgba(255,255,255,0.3);
+            font-size: 0.7rem;
+            font-style: italic;
+        }
+
+        /* MARQUEE */
+        .marquee-section {
+            padding: 3rem 0;
+            border-top: 1px solid rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            overflow: hidden;
+        }
+
+        .marquee {
+            display: flex;
+            animation: marquee 30s linear infinite;
+        }
+
+        .marquee-content {
+            display: flex;
+            gap: 4rem;
+            padding-right: 4rem;
+        }
+
+        .marquee-item {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.08);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .marquee-item i { color: var(--accent); opacity: 0.3; }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* SECTIONS */
+        section { padding: 8rem 0; }
+
+        .section-header {
+            margin-bottom: 4rem;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            letter-spacing: -2px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 50%, var(--accent) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textGradient 5s linear infinite;
+        }
+        
+        @keyframes textGradient {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        /* BENTO GRID */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(2, 280px);
+            gap: 1.25rem;
+        }
+
+        .bento-item {
+            background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform;
+            backdrop-filter: blur(10px);
+        }
+        
+        .bento-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(245, 166, 35, 0.3), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .bento-item:hover {
+            border-color: rgba(245, 166, 35, 0.2);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 30px rgba(245, 166, 35, 0.05);
+            transform: translateY(-3px);
+        }
+        
+        .bento-item:hover::before {
+            opacity: 1;
+        }
+
+        .bento-1 { grid-column: span 4; }
+        .bento-2 { grid-column: span 4; }
+        .bento-3 { grid-column: span 4; }
+        .bento-4 { grid-column: span 6; }
+        .bento-5 { grid-column: span 6; }
+
+        @media (max-width: 992px) {
+            .bento-1, .bento-2, .bento-3 { grid-column: span 6; }
+            .bento-4, .bento-5 { grid-column: span 12; }
+            .bento-grid { grid-template-rows: auto; }
+        }
+
+        @media (max-width: 576px) {
+            .bento-1, .bento-2, .bento-3, .bento-4, .bento-5 { grid-column: span 12; }
+        }
+
+        .bento-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(245, 166, 35, 0.2), rgba(255, 107, 53, 0.1));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            position: relative;
+            animation: iconFloat 4s ease-in-out infinite;
+            box-shadow: 0 8px 25px rgba(245, 166, 35, 0.15);
+        }
+        
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .bento-item:nth-child(2) .bento-icon { animation-delay: 0.5s; }
+        .bento-item:nth-child(3) .bento-icon { animation-delay: 1s; }
+        .bento-item:nth-child(4) .bento-icon { animation-delay: 1.5s; }
+        .bento-item:nth-child(5) .bento-icon { animation-delay: 2s; }
+
+        .bento-icon i {
+            font-size: 1.4rem;
+            color: var(--accent);
+            filter: drop-shadow(0 0 8px rgba(245, 166, 35, 0.5));
+        }
+
+        .bento-item h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .bento-item p {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* COMMANDS */
+        .commands-section {
+            background: linear-gradient(180deg, var(--bg), rgba(245, 166, 35, 0.01), var(--bg));
+        }
+
+        .cmd-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .cmd-grid { grid-template-columns: 1fr; }
+        }
+
+        .cmd-card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: transform 0.15s ease-out, border-color 0.15s ease-out;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform;
+        }
+
+        .cmd-card:hover {
+            border-color: rgba(245, 166, 35, 0.1);
+        }
+
+        .cmd-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(245, 166, 35, 0.15), rgba(255, 107, 53, 0.08));
+            border: 1px solid rgba(245, 166, 35, 0.25);
+            color: var(--accent);
+            padding: 0.7rem 1.2rem;
+            border-radius: 12px;
+            font-family: 'SF Mono', monospace;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 15px rgba(245, 166, 35, 0.1);
+            text-shadow: 0 0 10px rgba(245, 166, 35, 0.3);
+        }
+
+        .cmd-card h4 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .cmd-card > p {
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+
+        .cmd-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .cmd-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 0;
+            color: rgba(255,255,255,0.55);
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .cmd-list li:last-child { border-bottom: none; }
+
+        .cmd-list li i {
+            color: var(--accent);
+            font-size: 0.5rem;
+        }
+
+        /* CTA */
+        .cta-section {
+            text-align: center;
+            position: relative;
+        }
+
+        .cta-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: textGradient 3s linear infinite;
+        }
+
+        .cta-desc {
+            color: rgba(255,255,255,0.4);
+            font-size: 1.1rem;
+            max-width: 450px;
+            margin: 0 auto 2.5rem;
+        }
+
+        /* FOOTER */
+        footer {
+            padding: 3rem 0;
+            border-top: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .footer-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-brand img { width: 32px; height: 32px; }
+
+        .footer-brand span {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .social-link {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            transition: all 0.2s ease-out;
+            -webkit-tap-highlight-color: transparent;
+            will-change: transform;
+        }
+
+        .social-link:hover {
+            background: linear-gradient(145deg, rgba(245, 166, 35, 0.15), rgba(255, 107, 53, 0.1));
+            border-color: rgba(245, 166, 35, 0.3);
+            color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(245, 166, 35, 0.2);
+        }
+
+        .footer-text {
+            color: rgba(255,255,255,0.25);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .footer-inner { flex-direction: column; gap: 2rem; text-align: center; }
+            body { cursor: auto; }
+            .cursor, .cursor-dot { display: none; }
+            
+            .hero { padding: 100px 0 60px; min-height: auto; }
+            .hero-title { font-size: 2.2rem; letter-spacing: -1px; }
+            .hero-desc { font-size: 0.95rem; padding: 0 10px; }
+            .hero-cta { flex-direction: column; gap: 1rem; width: 100%; padding: 0 20px; }
+            .hero-cta .btn-glow, .hero-cta .btn-ghost { width: 100%; justify-content: center; }
+            
+            section { padding: 4rem 0; }
+            .section-title { font-size: 1.8rem; letter-spacing: -1px; }
+            .section-header { margin-bottom: 2rem; }
+            
+            .bento-item { padding: 1.5rem; }
+            .bento-item h3 { font-size: 1.15rem; }
+            .bento-item p { font-size: 0.9rem; }
+            
+            .cmd-card { padding: 1.5rem; }
+            .cmd-tag { padding: 0.5rem 1rem; font-size: 0.85rem; }
+            .cmd-card h4 { font-size: 1.1rem; }
+            
+            .cta-title { font-size: 2rem; }
+            .cta-desc { font-size: 1rem; padding: 0 20px; }
+            
+            .marquee-item { font-size: 1rem; }
+            
+            .logo img { width: 38px; height: 38px; }
+            .logo span { font-size: 1.2rem; }
+        }
+        
+        @media (max-width: 480px) {
+            .hero-title { font-size: 1.8rem; }
+            .hero-eyebrow span { font-size: 0.7rem; padding: 6px 12px; }
+            .section-title { font-size: 1.5rem; }
+            .bento-icon { width: 44px; height: 44px; }
+            .bento-icon i { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+    <canvas id="particles-canvas"></canvas>
+
+    <nav id="navbar">
+        <div class="container">
+            <div class="nav-inner">
+                <a href="#" class="logo">
+                    <img src="public/logo/logo.png" alt="Forsteri">
+                    <span>Forsteri</span>
+                </a>
+                <div class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#commands">Commands</a>
+                    <a href="https://discord.com/oauth2/authorize?client_id=1464445415230406729&permissions=8&integration_type=0&scope=bot" class="btn-glow"><i class="fab fa-discord"></i>Add Bot</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-centered">
+                <div class="hero-eyebrow">
+                    <span><i class="fas fa-shield-halved"></i> AI-Powered Protection</span>
+                </div>
+                <h1 class="hero-title text-center">
+                    <div class="line"><span style="--delay: 0.1s">Protect Your</span></div>
+                    <div class="line"><span style="--delay: 0.2s" class="gradient">Server</span></div>
+                </h1>
+                <p class="hero-desc text-center mx-auto">
+                    AI-powered moderation that detects scams and threats in real-time. Keep your community safe 24/7.
+                </p>
+                <div class="hero-cta" style="justify-content: center; margin-top: 2rem;">
+                    <a href="https://discord.com/oauth2/authorize?client_id=1464445415230406729&permissions=8&integration_type=0&scope=bot" class="btn-glow"><i class="fab fa-discord"></i>Add to Discord</a>
+                    <a href="#features" class="btn-ghost">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="marquee-section">
+        <div class="marquee">
+            <div class="marquee-content">
+                <span class="marquee-item"><i class="fas fa-shield-halved"></i> AI SCAM DETECTION</span>
+                <span class="marquee-item"><i class="fas fa-bolt"></i> LIGHTNING FAST</span>
+                <span class="marquee-item"><i class="fas fa-robot"></i> SMART MODERATION</span>
+                <span class="marquee-item"><i class="fas fa-lock"></i> 24/7 PROTECTION</span>
+                <span class="marquee-item"><i class="fas fa-image"></i> IMAGE SCANNING</span>
+                <span class="marquee-item"><i class="fas fa-gavel"></i> AUTO PUNISHMENTS</span>
+            </div>
+            <div class="marquee-content">
+                <span class="marquee-item"><i class="fas fa-shield-halved"></i> AI SCAM DETECTION</span>
+                <span class="marquee-item"><i class="fas fa-bolt"></i> LIGHTNING FAST</span>
+                <span class="marquee-item"><i class="fas fa-robot"></i> SMART MODERATION</span>
+                <span class="marquee-item"><i class="fas fa-lock"></i> 24/7 PROTECTION</span>
+                <span class="marquee-item"><i class="fas fa-image"></i> IMAGE SCANNING</span>
+                <span class="marquee-item"><i class="fas fa-gavel"></i> AUTO PUNISHMENTS</span>
+            </div>
+        </div>
+    </div>
+
+    <section id="features">
+        <div class="container">
+            <div class="section-header text-center">
+                <div class="section-label">Features</div>
+                <h2 class="section-title">Built for Protection</h2>
+            </div>
+            <div class="bento-grid">
+                <div class="bento-item bento-1">
+                    <div class="bento-icon"><i class="fas fa-robot"></i></div>
+                    <h3>AI Detection</h3>
+                    <p>Automatically detect crypto scams, phishing attempts, and fraud in real-time.</p>
+                </div>
+                <div class="bento-item bento-2">
+                    <div class="bento-icon"><i class="fas fa-image"></i></div>
+                    <h3>Image Scanning</h3>
+                    <p>Scan images for suspicious content and fake screenshots.</p>
+                </div>
+                <div class="bento-item bento-3">
+                    <div class="bento-icon"><i class="fas fa-scroll"></i></div>
+                    <h3>Smart Logging</h3>
+                    <p>Comprehensive audit logs for every server action.</p>
+                </div>
+                <div class="bento-item bento-4">
+                    <div class="bento-icon"><i class="fas fa-gavel"></i></div>
+                    <h3>Auto Punishments</h3>
+                    <p>Configure automatic warn, mute, kick and ban actions based on violations.</p>
+                </div>
+                <div class="bento-item bento-5">
+                    <div class="bento-icon"><i class="fas fa-bolt"></i></div>
+                    <h3>Lightning Fast</h3>
+                    <p>Under 50ms response time for instant threat detection and handling.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="commands" class="commands-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <div class="section-label">Commands</div>
+                <h2 class="section-title">Simple & Powerful</h2>
+            </div>
+            <div class="cmd-grid">
+                <div class="cmd-card">
+                    <div class="cmd-tag">/setup</div>
+                    <h4>Quick Configuration</h4>
+                    <p>Set up your logging channel and start tracking events.</p>
+                    <ul class="cmd-list">
+                        <li><i class="fas fa-circle"></i>Choose log channel</li>
+                        <li><i class="fas fa-circle"></i>Configure log types</li>
+                        <li><i class="fas fa-circle"></i>Enable real-time alerts</li>
+                    </ul>
+                </div>
+                <div class="cmd-card">
+                    <div class="cmd-tag">/settings</div>
+                    <h4>Punishment Control</h4>
+                    <p>Fine-tune your moderation system.</p>
+                    <ul class="cmd-list">
+                        <li><i class="fas fa-circle"></i>Configure warn limits</li>
+                        <li><i class="fas fa-circle"></i>Set mute durations</li>
+                        <li><i class="fas fa-circle"></i>Define auto-actions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Ready?</h2>
+            <p class="cta-desc">Join servers using Forsteri for protection.</p>
+            <a href="https://discord.com/oauth2/authorize?client_id=1464445415230406729&permissions=8&integration_type=0&scope=bot" class="btn-glow"><i class="fab fa-discord"></i>Add Forsteri Now</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <img src="public/logo/logo.png" alt="">
+                    <span>Forsteri</span>
+                </div>
+                <div class="social-links">
+                    <a href="https://discord.gg/PRcv5rVmnY" class="social-link"><i class="fab fa-discord"></i></a>
+                </div>
+                <div class="footer-text">&copy; 2026 Forsteri</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Particle canvas
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createParticles() {
+            particles = [];
+            const count = Math.floor((canvas.width * canvas.height) / 15000);
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 1.5 + 0.5,
+                    speedX: (Math.random() - 0.5) * 0.3,
+                    speedY: (Math.random() - 0.5) * 0.3,
+                    opacity: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(245, 166, 35, ${p.opacity})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        resize();
+        createParticles();
+        animate();
+        window.addEventListener('resize', () => { resize(); createParticles(); });
+
+        // Custom cursor
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorDot.style.left = e.clientX + 'px';
+            cursorDot.style.top = e.clientY + 'px';
+        });
+
+        document.querySelectorAll('a, button, .bento-item, .cmd-card, .discord-card').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Bento hover effect - desktop only
+        if (window.innerWidth > 768) {
+            document.querySelectorAll('.bento-item').forEach(item => {
+                item.addEventListener('mousemove', (e) => {
+                    const rect = item.getBoundingClientRect();
+                    item.style.setProperty('--x', `${((e.clientX - rect.left) / rect.width) * 100}%`);
+                    item.style.setProperty('--y', `${((e.clientY - rect.top) / rect.height) * 100}%`);
+                });
+            });
+        }
+
+        // Navbar scroll
+        window.addEventListener('scroll', () => {
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
